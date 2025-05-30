@@ -408,7 +408,7 @@ class GameDialog:
                 # Criar novo jogo
                 game = game_controller.create_game(game_data)
                 success = game is not None
-                message = "Jogo criado com sucesso!"
+                message = "Partida criado com sucesso!"
             
             if success:
                 self.result = True

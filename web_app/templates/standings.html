@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Classificação - {{ competition.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2">
+            <i class="bi bi-list-ol me-2"></i>Classificação
+        </h1>
+        <h4 class="text-muted">{{ competition.name }} - {{ competition.season }}</h4>
+    </div>
+    <div>
+        <a href="{{ url_for('competition.view', id=competition.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<!-- Informações da Competição -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Tipo:</strong> {{ competition.competition_type.value }}
+            </div>
+            <div class="col-md-3">
+                {% if competition.start_date %}
+                <strong>Início:</strong> {{ competition.start_date|date }}
+                {% endif %}
+            </div>
+            <div class="col-md-3">
+                {% if competition.end_date %}
+                <strong>Término:</strong> {{ competition.end_date|date }}
+                {% endif %}
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong> 
+                {% if competition.is_active %}
+                    <span class="badge bg-success">Ativa</span>
+                {% else %}
+                    <span class="badge bg-secondary">Inativa</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela de Classificação -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-trophy me-2"></i>Tabela de Classificação
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Pos</th>
+                        <th>Equipe</th>
+                        <th class="text-center">J</th>
+                        <th class="text-center">V</th>
+                        <th class="text-center">E</th>
+                        <th class="text-center">D</th>
+                        <th class="text-center">GP</th>
+                        <th class="text-center">GC</th>
+                        <th class="text-center">SG</th>
+                        <th class="text-center">Pts</th>
+                        <th class="text-center">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for standing in standings %}
+                    <tr class="{% if loop.index <= 4 %}table-success{% elif loop.index > standings|length - 4 %}table-danger{% endif %}">
+                        <td>
+                            <strong>{{ loop.index }}º</strong>
+                            {% if loop.index == 1 %}
+                                <i class="bi bi-trophy-fill text-warning ms-1"></i>
+                            {% elif loop.index <= 3 %}
+                                <i class="bi bi-award-fill text-secondary ms-1"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if standing.team.logo_url %}
+                                <img src="{{ standing.team.logo_url }}" alt="{{ standing.team.name }}" 
+                                     class="me-2 rounded" width="24" height="24">
+                                {% endif %}
+                                <strong>{{ standing.team.name }}</strong>
+                                {% if standing.team.abbreviation %}
+                                <small class="text-muted ms-2">({{ standing.team.abbreviation }})</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-center">{{ standing.games_played }}</td>
+                        <td class="text-center text-success"><strong>{{ standing.wins }}</strong></td>
+                        <td class="text-center text-warning">{{ standing.draws }}</td>
+                        <td class="text-center text-danger">{{ standing.losses }}</td>
+                        <td class="text-center">{{ standing.goals_for }}</td>
+                        <td class="text-center">{{ standing.goals_against }}</td>
+                        <td class="text-center {% if standing.goal_difference > 0 %}text-success{% elif standing.goal_difference < 0 %}text-danger{% endif %}">
+                            {{ '+' if standing.goal_difference > 0 else '' }}{{ standing.goal_difference }}
+                        </td>
+                        <td class="text-center"><strong>{{ standing.points }}</strong></td>
+                        <td class="text-center">{{ "%.1f"|format(standing.win_percentage) }}%</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="11" class="text-center text-muted">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Nenhuma equipe participando desta competição.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Legenda -->
+{% if standings %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Legenda</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><strong>J:</strong> Jogos</li>
+                    <li><strong>V:</strong> Vitórias</li>
+                    <li><strong>E:</strong> Empates</li>
+                    <li><strong>D:</strong> Derrotas</li>
+                    <li><strong>GP:</strong> Gols Pró</li>
+                    <li><strong>GC:</strong> Gols Contra</li>
+                    <li><strong>SG:</strong> Saldo de Gols</li>
+                    <li><strong>Pts:</strong> Pontos</li>
+                    <li><strong>%:</strong> Aproveitamento</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Zonas de Classificação</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><span class="badge bg-success me-2">Verde</span> Classificação (Top 4)</li>
+                    <li><span class="badge bg-light text-dark me-2">Branco</span> Zona Neutra</li>
+                    <li><span class="badge bg-danger me-2">Vermelho</span> Rebaixamento (Bottom 4)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

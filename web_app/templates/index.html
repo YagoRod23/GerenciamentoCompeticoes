@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Início - Sistema de Gerenciamento Esportivo{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center py-5 mb-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold text-primary mb-4">
+                    <i class="bi bi-trophy-fill me-3"></i>
+                    Sistema de Gerenciamento Esportivo
+                </h1>
+                <p class="lead text-muted mb-4">
+                    Plataforma completa para gestão de competições, equipes, jogadores e resultados esportivos.
+                </p>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('public.login') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>login
+                </a>
+                {% else %}
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="bi bi-speedometer2 me-2"></i>Ir para Dashboard
+                </a>
+                {% endif %}
+                <a href="{{ url_for('public.about') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-info-circle me-2"></i>Saiba Mais
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center fs-2 mb-3">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h3 class="card-title">Gestão de Equipes</h3>
+                    <p class="card-text">
+                        Gerencie informações completas das equipes, incluindo jogadores, técnicos e histórico de participações.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center fs-2 mb-3">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <h3 class="card-title">Competições</h3>
+                    <p class="card-text">
+                        Organize e acompanhe competições com sistemas de classificação, tabelas e resultados em tempo real.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="feature-icon bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center fs-2 mb-3">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <h3 class="card-title">Estatísticas</h3>
+                    <p class="card-text">
+                        Acompanhe estatísticas detalhadas de jogadores, equipes e competições com relatórios completos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>Próximos Jogos
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Time A vs Time B</strong><br>
+                                <small class="text-muted">15/12/2024 - 15:00</small>
+                            </div>
+                            <span class="badge bg-primary">Hoje</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Time C vs Time D</strong><br>
+                                <small class="text-muted">16/12/2024 - 16:30</small>
+                            </div>
+                            <span class="badge bg-secondary">Amanhã</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Time E vs Time F</strong><br>
+                                <small class="text-muted">18/12/2024 - 19:00</small>
+                            </div>
+                            <span class="badge bg-light text-dark">18/12</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-list-ol me-2"></i>Classificação Geral
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Equipe</th>
+                                    <th>Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-warning">1º</span></td>
+                                    <td>Exemplo FC</td>
+                                    <td><strong>45</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-light text-dark">2º</span></td>
+                                    <td>Sport Club</td>
+                                    <td><strong>42</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-light text-dark">3º</span></td>
+                                    <td>Unidos FC</td>
+                                    <td><strong>39</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-light text-dark">4º</span></td>
+                                    <td>Atlético</td>
+                                    <td><strong>36</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

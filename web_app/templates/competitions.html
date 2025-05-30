@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Competições - Sistema de Gerenciamento Esportivo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">
+        <i class="bi bi-trophy me-2"></i>Competições
+    </h1>
+    {% if current_user.user_type.name in ['ADMIN', 'ORGANIZER'] %}
+    <a href="{{ url_for('competition.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Nova Competição
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ request.args.get('search', '') }}" placeholder="Nome da competição...">
+            </div>
+            <div class="col-md-3">
+                <label for="type" class="form-label">Tipo</label>
+                <select class="form-select" id="type" name="type">
+                    <option value="">Todos os tipos</option>
+                    <option value="CHAMPIONSHIP" {{ 'selected' if request.args.get('type') == 'CHAMPIONSHIP' }}>Campeonato</option>
+                    <option value="CUP" {{ 'selected' if request.args.get('type') == 'CUP' }}>Copa</option>
+                    <option value="TOURNAMENT" {{ 'selected' if request.args.get('type') == 'TOURNAMENT' }}>Torneio</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option value="active" {{ 'selected' if request.args.get('status') == 'active' }}>Ativas</option>
+                    <option value="inactive" {{ 'selected' if request.args.get('status') == 'inactive' }}>Inativas</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Competições -->
+<div class="row">
+    {% for competition in competitions %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">{{ competition.name }}</h5>
+                {% if competition.is_active %}
+                    <span class="badge bg-success">Ativa</span>
+                {% else %}
+                    <span class="badge bg-secondary">Inativa</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Tipo:</strong> {{ competition.competition_type.value }}<br>
+                    <strong>Temporada:</strong> {{ competition.season }}<br>
+                    {% if competition.start_date %}
+                    <strong>Início:</strong> {{ competition.start_date|date }}<br>
+                    {% endif %}
+                    {% if competition.end_date %}
+                    <strong>Término:</strong> {{ competition.end_date|date }}<br>
+                    {% endif %}
+                </p>
+                {% if competition.description %}
+                <p class="text-muted small">{{ competition.description[:100] }}{% if competition.description|length > 100 %}...{% endif %}</p>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('competition.view', id=competition.id) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>Ver
+                    </a>
+                    <a href="{{ url_for('competition.standings', id=competition.id) }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-list-ol me-1"></i>Classificação
+                    </a>
+                    {% if current_user.user_type.name in ['ADMIN', 'ORGANIZER'] %}
+                    <a href="{{ url_for('competition.edit', id=competition.id) }}" class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle me-2"></i>
+            Nenhuma competição encontrada.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Paginação -->
+{% if competitions.pages > 1 %}
+<nav aria-label="Navegação das competições">
+    <ul class="pagination justify-content-center">
+        {% if competitions.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('competition.list', page=competitions.prev_num, **request.args) }}">Anterior</a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in competitions.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != competitions.page %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('competition.list', page=page_num, **request.args) }}">{{ page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">…</span>
+            </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if competitions.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('competition.list', page=competitions.next_num, **request.args) }}">Próximo</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

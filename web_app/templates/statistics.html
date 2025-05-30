@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}Estatísticas - Sistema Esportivo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .progress-bar-custom {
+        height: 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .team-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .team-stats:last-child {
+        border-bottom: none;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Estatísticas</h1>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="refreshStats()">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="exportStats()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row">
+        <div class="col-12">
+            <div class="filter-section">
+                <h5 class="mb-3">Filtros</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="competitionFilter" class="form-label">Competição</label>
+                        <select class="form-select" id="competitionFilter">
+                            <option value="">Todas as competições</option>
+                            <option value="1">Campeonato Brasileiro</option>
+                            <option value="2">Copa do Brasil</option>
+                            <option value="3">Estadual</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="seasonFilter" class="form-label">Temporada</label>
+                        <select class="form-select" id="seasonFilter">
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="teamFilter" class="form-label">Equipe</label>
+                        <select class="form-select" id="teamFilter">
+                            <option value="">Todas as equipes</option>
+                            <option value="1">São Paulo FC</option>
+                            <option value="2">Corinthians</option>
+                            <option value="3">Palmeiras</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Aplicar Filtros
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas Gerais -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">156</div>
+                <div class="stats-label">Total de Jogos</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">24</div>
+                <div class="stats-label">Equipes Ativas</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">486</div>
+                <div class="stats-label">Total de Gols</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="stats-number">3.12</div>
+                <div class="stats-label">Média de Gols/Jogo</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos e Análises -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Gols por Rodada</div>
+                <canvas id="goalsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Distribuição de Resultados</div>
+                <canvas id="resultsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas por Equipe -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="chart-container">
+                <div class="chart-title">Desempenho das Equipes</div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Equipe</th>
+                                <th class="text-center">J</th>
+                                <th class="text-center">V</th>
+                                <th class="text-center">E</th>
+                                <th class="text-center">D</th>
+                                <th class="text-center">GP</th>
+                                <th class="text-center">GC</th>
+                                <th class="text-center">SG</th>
+                                <th class="text-center">%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamStatsTable">
+                            <tr>
+                                <td><strong>São Paulo FC</strong></td>
+                                <td class="text-center">15</td>
+                                <td class="text-center">10</td>
+                                <td class="text-center">3</td>
+                                <td class="text-center">2</td>
+                                <td class="text-center">28</td>
+                                <td class="text-center">12</td>
+                                <td class="text-center">+16</td>
+                                <td class="text-center">73%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Corinthians</strong></td>
+                                <td class="text-center">15</td>
+                                <td class="text-center">8</td>
+                                <td class="text-center">4</td>
+                                <td class="text-center">3</td>
+                                <td class="text-center">22</td>
+                                <td class="text-center">15</td>
+                                <td class="text-center">+7</td>
+                                <td class="text-center">62%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Palmeiras</strong></td>
+                                <td class="text-center">15</td>
+                                <td class="text-center">7</td>
+                                <td class="text-center">5</td>
+                                <td class="text-center">3</td>
+                                <td class="text-center">25</td>
+                                <td class="text-center">18</td>
+                                <td class="text-center">+7</td>
+                                <td class="text-center">58%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <div class="chart-title">Top Artilheiros</div>
+                <div class="team-stats">
+                    <span><strong>João Silva</strong> (São Paulo FC)</span>
+                    <span class="badge bg-primary">12 gols</span>
+                </div>
+                <div class="team-stats">
+                    <span><strong>Pedro Santos</strong> (Corinthians)</span>
+                    <span class="badge bg-primary">10 gols</span>
+                </div>
+                <div class="team-stats">
+                    <span><strong>Carlos Lima</strong> (Palmeiras)</span>
+                    <span class="badge bg-primary">9 gols</span>
+                </div>
+                <div class="team-stats">
+                    <span><strong>Rafael Costa</strong> (Santos)</span>
+                    <span class="badge bg-primary">8 gols</span>
+                </div>
+                <div class="team-stats">
+                    <span><strong>Bruno Oliveira</strong> (Flamengo)</span>
+                    <span class="badge bg-primary">7 gols</span>
+                </div>
+            </div>
+
+            <div class="chart-container mt-3">
+                <div class="chart-title">Cartões por Equipe</div>
+                <div class="team-stats">
+                    <span>São Paulo FC</span>
+                    <div>
+                        <span class="badge bg-warning me-1">15</span>
+                        <span class="badge bg-danger">3</span>
+                    </div>
+                </div>
+                <div class="team-stats">
+                    <span>Corinthians</span>
+                    <div>
+                        <span class="badge bg-warning me-1">22</span>
+                        <span class="badge bg-danger">5</span>
+                    </div>
+                </div>
+                <div class="team-stats">
+                    <span>Palmeiras</span>
+                    <div>
+                        <span class="badge bg-warning me-1">18</span>
+                        <span class="badge bg-danger">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Detalhadas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-container">
+                <div class="chart-title">Análise Temporal</div>
+                <canvas id="timelineChart" width="800" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Detalhes -->
+<div class="modal fade" id="statsDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes da Estatística</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="statsDetailContent">
+                    <!-- Conteúdo será carregado dinamicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Inicializar gráficos
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCharts();
+    });
+
+    function initializeCharts() {
+        // Gráfico de gols por rodada
+        const goalsCtx = document.getElementById('goalsChart').getContext('2d');
+        new Chart(goalsCtx, {
+            type: 'line',
+            data: {
+                labels: ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8'],
+                datasets: [{
+                    label: 'Gols por Rodada',
+                    data: [12, 15, 8, 18, 11, 14, 16, 13],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gráfico de distribuição de resultados
+        const resultsCtx = document.getElementById('resultsChart').getContext('2d');
+        new Chart(resultsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Vitórias Casa', 'Empates', 'Vitórias Visitante'],
+                datasets: [{
+                    data: [45, 25, 30],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        // Gráfico temporal
+        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+        new Chart(timelineCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'Jogos Realizados',
+                    data: [20, 25, 18, 30, 22, 28],
+                    backgroundColor: '#007bff'
+                }, {
+                    label: 'Gols Marcados',
+                    data: [65, 80, 55, 95, 70, 88],
+                    backgroundColor: '#28a745'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function refreshStats() {
+        // Implementar atualização das estatísticas
+        showToast('Estatísticas atualizadas!', 'success');
+    }
+
+    function exportStats() {
+        // Implementar exportação das estatísticas
+        showToast('Exportando estatísticas...', 'info');
+    }
+
+    function applyFilters() {
+        const competition = document.getElementById('competitionFilter').value;
+        const season = document.getElementById('seasonFilter').value;
+        const team = document.getElementById('teamFilter').value;
+        
+        // Implementar aplicação dos filtros
+        showToast('Filtros aplicados!', 'success');
+    }
+
+    function showToast(message, type) {
+        // Implementar sistema de toast/notificação
+        console.log(`${type}: ${message}`);
+    }
+</script>
+{% endblock %}

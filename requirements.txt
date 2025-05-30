@@ -1,0 +1,23 @@
+# Framework Web
+Flask==2.3.3
+Flask-Login==0.6.3
+Flask-WTF==1.1.1
+
+# Banco de Dados
+SQLAlchemy==2.0.21
+alembic==1.12.0
+
+# Formulários e Validação
+WTForms==3.0.1
+
+# Segurança
+bcrypt==4.0.1
+cryptography==41.0.4
+
+# Utilitários
+python-dotenv==1.0.0
+Werkzeug==2.3.7
+
+# Desenvolvimento
+pytest==7.4.2
+pytest-flask==1.2.0
